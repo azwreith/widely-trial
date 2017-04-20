@@ -23,12 +23,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth-script.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-storage-script.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-messaging-script.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 
 <link rel="import" href="my-icons.html">
@@ -69,6 +72,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
+    <firebase-app 
+      auth-domain="[[config.authDomain]]"
+      database-url="[[config.databaseURL]]"
+      api-key="[[config.apiKey]]">
+    </firebase-app>
+    <firebase-auth id="auth" user="{{user}}" signed-in="{{signedIn}}" provider="google"></firebase-auth>
+
     <app-location route="{{route}}"></app-location>
     <app-route
         route="{{route}}"
@@ -81,9 +91,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer id="drawer">
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="/view1">View One</a>
-          <a name="view2" href="/view2">View Two</a>
-          <a name="view3" href="/view3">View Three</a>
+          <div hidden$="[[user]]">
+            <a name="view1" href="/view1">Sign Up</a>
+            <a name="view2" href="/view2">Login</a>
+          </div>
+          <div hidden$="[[!user]]">
+            <a name="email">[[user.email]]</a>
+            <a name="logout" href="#" on-tap="logout">Log Out</a>
+          </div>
         </iron-selector>
       </app-drawer>
 
@@ -93,7 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <app-header condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <div main-title>Widely Trial</div>
           </app-toolbar>
         </app-header>
 
@@ -109,23 +124,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
-
-    <firebase-app 
-      auth-domain="[[config.authDomain]]"
-      database-url="[[config.databaseURL]]"
-      api-key="[[config.apiKey]]">
-    </firebase-app>
+    <paper-toast id="toaster"></paper-toast>
   </template>
 
   <script>
     var config = {
-      apiKey: "api-key-you-get-from-firebase",
-      authDomain: "auth-domain-from-firebase",
-      databaseURL: "database-url-from-firebase",
+      apiKey: "AIzaSyD38J1GQQ9BL54j73_NF5TfG22mAhJOXe8",
+      authDomain: "widely-trial.firebaseapp.com",
+      databaseURL: "https://widely-trial.firebaseio.com",
     };
 
     Polymer({
       is: 'my-app',
+
+      ready: function() {
+       this.addEventListener('showToast', this.showToastHandler);
+      },
 
       properties: {
         page: {
@@ -138,6 +152,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Object,
           readOnly: true,
           value: function() { return config; }
+        },
+
+        signedIn: {
+          type: Boolean,
+          value: false
         },
       },
       
@@ -162,8 +181,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _showPage404: function() {
         this.page = 'view404';
       },
+      
+      logout: function() {
+        this.$.auth.signOut().then(() => {
+          this.$.toaster.show('Goodbye!')
+        })
+      },
+
+      showToastHandler: function(event) {
+        this.$.toaster.show(event.detail.message)
+      },
+
     });
   </script>
-
-  <script src="main.js"></script>
 </dom-module>

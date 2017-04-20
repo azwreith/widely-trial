@@ -13,6 +13,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-view1">
   <template>
+
+    <firebase-auth id="auth" user="{{user}}" signed-in="{{signedIn}}" provider="google"></firebase-auth>
+
     <style include="shared-styles">
       :host {
         display: block;
@@ -20,23 +23,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 10px;
       }
 
-      paper-button {
-        margin-top: 20px;
-      }
     </style>
 
     <div class="card">
-      <div class="form">
-        <paper-input label="Email"></paper-input>
-        <paper-input label="Password" type="password"></paper-input>
-        <paper-button raised onclick="signUp">Sign Up</paper-button>
-        
+      <div hidden$="[[signedIn]]">
+        <div class="form">
+          <paper-input label="Email" id="email"></paper-input>
+          <paper-input label="Password" type="password" id="password"></paper-input>
+          <paper-button raised on-tap="signUp">Sign Up</paper-button>
+        </div>
       </div>
+      <div hidden$="[[!signedIn]]">
+        [[user.email]]
+      </div>
+    </div>
   </template>
 
   <script>
     Polymer({
       is: 'my-view1',
+
+      signUp: function() {
+        this.$.auth.createUserWithEmailAndPassword(this.$.email.value, this.$.password.value).then((result) => {
+          this.fire('showToast', { message: "Successfully Registered!" });
+        }).catch((result) => {
+          this.fire('showToast', { message: "Something's Wrong." })
+        });
+      },
     });
+
   </script>
 </dom-module>
