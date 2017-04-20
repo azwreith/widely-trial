@@ -20,6 +20,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-storage-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-messaging-script.html">
+
+
 <link rel="import" href="my-icons.html">
 
 <dom-module id="my-app">
@@ -98,9 +109,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+    <firebase-app 
+      auth-domain="[[config.authDomain]]"
+      database-url="[[config.databaseURL]]"
+      api-key="[[config.apiKey]]">
+    </firebase-app>
   </template>
 
   <script>
+    var config = {
+      apiKey: "api-key-you-get-from-firebase",
+      authDomain: "auth-domain-from-firebase",
+      databaseURL: "database-url-from-firebase",
+    };
+
     Polymer({
       is: 'my-app',
 
@@ -110,8 +133,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           reflectToAttribute: true,
           observer: '_pageChanged',
         },
-      },
 
+        config: {
+          type: Object,
+          readOnly: true,
+          value: function() { return config; }
+        },
+      },
+      
       observers: [
         '_routePageChanged(routeData.page)',
       ],
@@ -135,4 +164,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
     });
   </script>
+
+  <script src="main.js"></script>
 </dom-module>
