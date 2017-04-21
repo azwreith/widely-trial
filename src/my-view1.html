@@ -16,6 +16,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <firebase-auth id="auth" user="{{user}}" signed-in="{{signedIn}}" provider="google"></firebase-auth>
 
+    <firebase-document id="qry"
+        path="/Users"
+        data="{{data}}">
+    </firebase-document>
+
+
+    <firebase-document id='document'
+     data='{{userData}}'>
+    </firebase-document>
+
     <style include="shared-styles">
       :host {
         display: block;
@@ -33,9 +43,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-button raised on-tap="signUp">Sign Up</paper-button>
         </div>
       </div>
-      <div hidden$="[[!signedIn]]">
-        [[user.email]]
-      </div>
+      <template is="dom-if" if="[[signedIn]]">
+        <h3>Details</h3>
+        <template is="dom-repeat" items="{{_toArray(data)}}" as="myUser">
+
+          <template is="dom-if" if="[[_isMine(myUser)]]">
+            <template is="dom-repeat" items="{{_toArray(myUser.value)}}">
+                <div>[[item.name]]: <span>[[item.value]]</span></div>
+            </template>
+          </template>
+
+        </template>
+      </template>
     </div>
   </template>
 
@@ -43,13 +62,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'my-view1',
 
+      properties: {
+       uid: String,
+       data: {
+        type: Object,
+         observer: 'dataChanged'
+       }
+     },
+
+     dataChanged: function (newData, oldData) {
+        console.log(newData);
+    },
+
+
       signUp: function() {
         this.$.auth.createUserWithEmailAndPassword(this.$.email.value, this.$.password.value).then((result) => {
+          this.userData.email = result.email;
+          this.userData.emailVerified = result.emailVerified;
+          this.saveUser(result.uid);
           this.fire('showToast', { message: "Successfully Registered!" });
         }).catch((result) => {
+          console.log(result);
           this.fire('showToast', { message: "Something's Wrong." })
         });
       },
+
+      saveUser: function (uid) {
+        this.$.document.saveValue("/Users", uid).then(function (res) {
+          console.log(res);
+        }).catch(function(res) {
+          console.log(res);
+        });
+      },
+
+      _toArray: function(obj) {
+        if(obj) {
+          return Object.keys(obj).map(function(key) {
+              return {
+                  name: key,
+                  value: obj[key]
+              };
+          });
+        }
+      },
+
+
+      _isMine: function(myUser) {
+        return myUser.name === this.user.uid;
+      },
+
     });
 
   </script>
